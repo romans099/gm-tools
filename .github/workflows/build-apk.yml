@@ -26,14 +26,26 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         
-      - name: Install and build
+      - name: Install dependencies
         run: |
           npm install
-          npm run build
           npm install -g @capacitor/cli
-          capacitor init gm-tools ru.gmtools.app
-          capacitor add android
-          capacitor sync android
+          
+      - name: Build web app
+        run: npm run build
+        
+      - name: Initialize Capacitor and add Android
+        run: |
+          npx cap init gm-tools ru.gmtools.app
+          npx cap add android
+          # Копируем dist в www для Capacitor
+          cp -r dist www
+          # Обновляем capacitor.config.json
+          sed -i 's/"webDir": "dist"/"webDir": "www"/' capacitor.config.json
+          npx cap sync android
+        
+      - name: Build APK
+        run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
@@ -41,5 +53,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: gm-tools
+          name: gm-tools.apk
           path: android/app/build/outputs/apk/debug/*.apk
