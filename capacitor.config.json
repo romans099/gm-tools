@@ -1,0 +1,15 @@
+{
+  "appId": "ru.gmtools.app",
+  "appName": "GM Tools",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Permissions": {
+      "android": [
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    }
+  }
+}
