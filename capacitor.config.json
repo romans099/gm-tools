@@ -1,15 +1,53 @@
-{
-  "appId": "ru.gmtools.app",
-  "appName": "GM Tools",
-  "webDir": "dist",
-  "server": {
-    "androidScheme": "https"
-  },
-  "plugins": {
-    "Permissions": {
-      "android": [
-        "android.permission.SYSTEM_ALERT_WINDOW"
-      ]
-    }
-  }
-}
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -g @capacitor/cli @capacitor/android
+        
+      - name: Build web app
+        run: npm run build
+        
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        
+      - name: Add Android platform
+        run: |
+          npx cap init gm-tools ru.gmtools.app
+          npx cap add android
+          npx cap sync android
+        
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gm-tools.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
